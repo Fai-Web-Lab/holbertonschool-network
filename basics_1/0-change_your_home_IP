@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Configures local host resolution mappings in /etc/hosts
+# Configures local host resolution mappings safely without breaking on Docker mounts
 
-# Replace 127.0.0.1 with 127.0.0.2 for localhost regardless of tab or space spacing
-sudo sed -i -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' /etc/hosts 2>/dev/null || sed -i -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' /etc/hosts
+# Modify localhost in-memory and overwrite the file to bypass sed rename limits
+if [ -w /etc/hosts ]; then
+    cat /etc/hosts | sed -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' > /tmp/hosts.tmp && mv /tmp/hosts.tmp /etc/hosts 2>/dev/null || cat /etc/hosts | sed -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' | sudo tee /etc/hosts > /dev/null
+else
+    cat /etc/hosts | sed -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' | sudo tee /etc/hosts > /dev/null
+fi
 
-# Append facebook.com resolution to 8.8.8.8 if it doesn't already exist
+# Append facebook.com resolution safely if it doesn't already exist
 if ! grep -q "facebook.com" /etc/hosts; then
     echo -e "8.8.8.8\tfacebook.com" | sudo tee -a /etc/hosts > /dev/null || echo -e "8.8.8.8\tfacebook.com" >> /etc/hosts
 fi
