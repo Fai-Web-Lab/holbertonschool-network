@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Configures local host resolution mappings in /etc/hosts
+
+# Replace localhost resolution from 127.0.0.1 to 127.0.0.2
+sudo sed -i 's/127.0.0.1 localhost/127.0.0.2 localhost/g' /etc/hosts 2>/dev/null || sed -i 's/127.0.0.1 localhost/127.0.0.2 localhost/g' /etc/hosts
+
+# Append facebook.com resolution to 8.8.8.8
+echo -e "8.8.8.8\tfacebook.com" | sudo tee -a /etc/hosts > /dev/null
