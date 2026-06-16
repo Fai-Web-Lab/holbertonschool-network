@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Configures local host resolution mappings in /etc/hosts
+# Configures local host resolution mappings safely for Docker/jail environments
 
-# Replace 127.0.0.1 with 127.0.0.2 for localhost regardless of tab or space spacing
-sudo sed -i -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' /etc/hosts 2>/dev/null || sed -i -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g' /etc/hosts
+# 1. Modify localhost in-memory and stream it back directly into the file
+CONFIGURED_HOSTS=$(cat /etc/hosts | sed -E 's/127\.0\.0\.1([[:space:]]+)localhost/127.0.0.2\1localhost/g')
+echo "$CONFIGURED_HOSTS" | sudo tee /etc/hosts > /dev/null || echo "$CONFIGURED_HOSTS" > /etc/hosts
 
-# Append facebook.com resolution to 8.8.8.8 if it doesn't already exist
+# 2. Append facebook.com resolution if it doesn't already exist
 if ! grep -q "facebook.com" /etc/hosts; then
     echo -e "8.8.8.8\tfacebook.com" | sudo tee -a /etc/hosts > /dev/null || echo -e "8.8.8.8\tfacebook.com" >> /etc/hosts
 fi
